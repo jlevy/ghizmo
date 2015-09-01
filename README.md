@@ -8,8 +8,8 @@ Ghizmo is a simple command-line harness to do more complex things with the GitHu
 layered on top of the simple and clean [github3.py](https://github.com/sigmavirus24/github3.py) library.
 It's also easy to add more commands.
 
-It differs from [hub](https://github.com/github/hub) in that it's not focusing on just a few key features.
-Rather, it's just a way to use the full APIs more easily,
+It differs from [hub](https://github.com/github/hub) in that it's not focusing on just a few key features to augment `git`.
+Rather, it'sa way to use the full GitHub APIs more easily,
 and express data in JSON that's modeled directly off the APIs.
 Also, since it's in Python instead of Go, it can be extended without a compile step
 (see command definitions [here](ghizmo/commands) and [below](#custom-commands)).
