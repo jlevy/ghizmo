@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 """
+If commands require input, it must be line-delimited JSON usually just quoted strings.
+
 For further documentation, see: https://github.com/jlevy/ghizmo
 """
 
@@ -12,7 +14,7 @@ import sys
 import argparse
 
 NAME = "ghizmo"
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 DESCRIPTION = "ghizmo: Extensible GitHub command-line tricks"
 LONG_DESCRIPTION = __doc__
 
@@ -36,9 +38,13 @@ def main():
   import ghizmo
   import configs
 
-  parser = argparse.ArgumentParser(description=DESCRIPTION, version=VERSION, epilog="\n" + __doc__,
+  command_directory = ghizmo.command_directory()
+  command_docs = "commands:\n" + "\n".join(["  %s: %s" % (name, doc) for (name, doc) in command_directory])
+
+  parser = argparse.ArgumentParser(description=DESCRIPTION, version=VERSION,
+                                   epilog="\n" + __doc__ + "\n" + command_docs,
                                    formatter_class=argparse.RawTextHelpFormatter)
-  parser.add_argument("command", help="%s command" % NAME, choices=ghizmo.list_commands(use_dashes=True))
+  parser.add_argument("command", help="%s command" % NAME, choices=ghizmo.list_commands())
   parser.add_argument("--state", help="pull requests state", choices=["open", "closed", "all"])
   parser.add_argument("--format", help="output format", choices=["json", "yaml"])
   parser.add_argument("--username", help="username to log in as")
@@ -66,7 +72,7 @@ def main():
 
   # Assemble config for this run.
   formatter = ghizmo.print_formatter(args.format)
-  config = ghizmo.Config(repo=repo, formatter=formatter, dry_run=args.dry_run)
+  config = ghizmo.Config(repo=repo, formatter=formatter)
 
   ghizmo.run_command(args.command, config, args)
 

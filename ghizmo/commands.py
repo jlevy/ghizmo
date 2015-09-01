@@ -9,100 +9,99 @@ For GitHub the library API, see: https://github.com/sigmavirus24/github3.py
 from __future__ import print_function
 
 import logging as log
-
-from command_lib import read_json_lines
+import command_lib as lib
 
 
 def tags(config, args):
   """
-  All tag info.
+  List all tags.
   """
-  repo = config.repo
-  formatter = config.formatter
-  for tag in repo.tags():
-    formatter(tag)
+  return config.repo.tags()
 
 
-def branches(config, args):
+def show_tags(config, args):
   """
-  All branch info.
+  Show info for tags supplied on stdin.
   """
-  repo = config.repo
-  formatter = config.formatter
-  for branch in repo.branches():
-    formatter(branch)
-
-
-def refs(config, args):
-  """
-  All ref info.
-  """
-  repo = config.repo
-  formatter = config.formatter
-  for ref in repo.refs():
-    formatter(ref)
+  for item in lib.input_json_lines():
+    yield config.repo.tag(item)
 
 
 def _delete_ref(repo, ref_name, force, dry_run):
   ref = repo.ref(ref_name)
   if not ref and not force:
     raise ValueError("Reference not found: %s" % ref_name)
-  log.warn("Delete reference: %s", ref_name)
   if not dry_run:
     ref.delete()
+  return lib.status("Deleted %s" % ref_name, dry_run=dry_run)
 
 
-def delete_refs(config, args):
+def branches(config, args):
   """
-  Delete references by name.
+  List all branches.
   """
-  repo = config.repo
-  force = args.force
-  dry_run = args.dry_run
-  for ref_name in read_json_lines():
-    _delete_ref(repo, ref_name, force, dry_run)
+  return config.repo.branches()
+
+
+def show_branches(config, args):
+  """
+  Show branches supplied on stdin.
+  """
+  for item in lib.input_json_lines():
+    yield config.repo.branch(item)
 
 
 def delete_branches(config, args):
   """
-  Delete branches by name.
+  Delete branches supplied on stdin.
   """
-  repo = config.repo
-  force = args.force
-  dry_run = args.dry_run
-  for ref_name in read_json_lines():
-    _delete_ref(repo, "heads/" + ref_name, force, dry_run)
+  for ref_name in lib.input_json_lines():
+    yield _delete_ref(config.repo, "heads/" + ref_name, args.force, args.dry_run)
+
+
+def refs(config, args):
+  """
+  List all refs.
+  """
+  return config.repo.refs()
+
+
+def show_refs(config, args):
+  """
+  Show refs supplied on stdin.
+  """
+  for item in lib.input_json_lines():
+    yield config.repo.ref(item)
+
+
+def delete_refs(config, args):
+  """
+  Delete refs supplied on stdin.
+  """
+  for ref_name in lib.input_json_lines():
+    yield _delete_ref(config.repo, ref_name, args.force, args.dry_run)
 
 
 def pull_requests(config, args):
   """
-  All PR info.
+  List all PRs.
   """
-  repo = config.repo
-  formatter = config.formatter
   state = args.state or "open"
-  for pr in repo.pull_requests(state=state):
-    formatter(pr)
+  return config.repo.pull_requests(state=state)
 
 
 def contributors(config, args):
   """
-  Contributor info.
+  List all contributors.
   """
-  repo = config.repo
-  formatter = config.formatter
-  for c in repo.contributors():
-    formatter(c)
+  return config.repo.contributors()
 
 
 def stale_pr_branches(config, args):
   """
-  List "stale" branches that associated with a closed PR and are from the same
-  (non-forked) repository as the base.
+  List "stale" branches that associated with a closed PR and are from the same (non-forked) repository as the base.
   """
   repo = config.repo
-  formatter = config.formatter
-  repo_url = repo.url
   for pr in repo.pull_requests(state="closed"):
     is_stale = False
     if pr.head.repo == pr.base.repo:
@@ -110,7 +109,8 @@ def stale_pr_branches(config, args):
       if branch:
         is_stale = True
     if is_stale:
-      formatter({"html_url": pr.html_url,
-                 "base_branch": pr.base.ref,
-                 "head_branch": pr.head.ref,
-                 })
+      yield {
+        "html_url": pr.html_url,
+        "base_branch": pr.base.ref,
+        "head_branch": pr.head.ref,
+      }

@@ -15,6 +15,7 @@ import getpass
 from collections import namedtuple
 from functools32 import lru_cache  # functools32 pip
 import github3  # github3.py pip
+from github3.null import NullObject
 
 import configs
 import commands
@@ -40,6 +41,9 @@ def format_to_string(obj, format=None):
   if not format:
     format = "json"
 
+  if isinstance(obj, NullObject):
+    raise ValueError("Command returned null type (invalid input?): %s" % repr(obj))
+
   # Heuristic to convert github3 objects to serializable form.
   if hasattr(obj, "as_dict"):
     obj = obj.as_dict()
@@ -49,7 +53,7 @@ def format_to_string(obj, format=None):
   elif format == "yaml":
     return yaml.safe_dump(obj, default_style='"')
   else:
-    raise ValueError("format: %s" % format)
+    raise AssertionError("Invalid format: %s" % format)
 
 
 def print_formatter(format=None):
@@ -60,7 +64,7 @@ def print_formatter(format=None):
   return printer
 
 # The configuration to run.
-Config = namedtuple("Config", "repo formatter dry_run")
+Config = namedtuple("Config", "repo formatter")
 
 
 def _to_dash(name):
@@ -79,23 +83,38 @@ def all_command_functions():
 
 
 @lru_cache()
-def list_commands(use_dashes=False):
+def command_directory(use_dashes=True):
+  def doc_for_function(func):
+    if func.__doc__:
+      return func.__doc__.strip()
+    else:
+      return "(no pydoc)"
+
   transform = _to_dash if use_dashes else lambda x: x
-  return [transform(name) for (name, func) in all_command_functions()]
+  return [(transform(name), doc_for_function(func)) for (name, func) in all_command_functions()]
+
+
+@lru_cache()
+def list_commands(use_dashes=True):
+  return [command for (command, doc) in command_directory(use_dashes=use_dashes)]
 
 
 def get_command_func(command):
   command = _to_underscore(command)
-  if not command in list_commands():
+  if not command in list_commands(use_dashes=False):
     raise ValueError("invalid command: %s" % command)
   return getattr(commands, command)
 
 
 def run_command(command, config, args):
   command_func = get_command_func(command)
-  log.info("Command '%s' with config: %s", args.command, config)
+  log.info("Command '%s' (%s)", command, command_func)
+  log.info("Config: %s", config)
   log.info("Args: %s", args)
-  command_func(config, args)
+  # This executes the command step by step, either just to display results, or to display progress
+  # on an action with side effects.
+  for result in command_func(config, args):
+    config.formatter(result)
 
 # TODO:
 # Automagic loading of ghizmo_commands.py files from current directory.
