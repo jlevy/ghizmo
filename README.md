@@ -17,7 +17,7 @@ it can be extended without a compile step.
 
 Basic access to API, showing responses in JSON:
 
-```
+```bash
 $ ghizmo tags --repo torvalds/linux
 {
   "commit": {
@@ -32,7 +32,8 @@ $ ghizmo tags --repo torvalds/linux
 ```
 
 Combine with other tools:
-```
+
+```bash
 $ ghizmo tags --repo torvalds/linux | jq '.tarball_url' | head -1
 "https://api.github.com/repos/torvalds/linux/tarball/v4.2-rc8"
 ...
@@ -48,7 +49,8 @@ $ ghizmo contributors --repo torvalds/linux | jq '.contributions' | histogram.py
 ```
 
 You may skip the `--repo` option and Ghizmo will infer the current repository if you are in a working directory with a GitHub origin:
-```
+
+```bash
 $ ghizmo branches
 {
   "commit": {
@@ -61,7 +63,7 @@ $ ghizmo branches
 
 More complex commands can be defined easily.
 This command looks for non-deleted branches on closed PRs.
-```
+```bash
 $ ghizmo stale-pr-branches > stale-branches.json
 $ # Edit/review, then actually do it.
 $ jq '.head_branch' stale-pr-branches.json | ghizmo delete-branches --dry-run 
@@ -74,6 +76,9 @@ Delete reference: heads/bbb
 ...
 $
 ```
+
+Run `ghizmo --help` for a list of commands -- and see below on how to add new commands.
+
 
 ## Installation
 
@@ -94,7 +99,7 @@ so you can perform operations such as the ones above that process JSON outputs.
 You can supply username and password from the command line, but you probably want to be able to use APIs without typing your
 password. To do this, add a `~/.ghizmo.yml` file:
 
-```
+```yaml
 # Ghizmo configuration
 # Default GitHub login name:
 username: my-github-id
@@ -103,6 +108,29 @@ access_token: aaaaaaaaaabbbbbbbbbbbccccccccc1234567890
 ```
 
 Create an access token [here](https://github.com/settings/tokens) to use with Ghizmo.
+
+
+## Custom commands
+
+To add a new command, create a `ghizmo_commands.py` file in your current directory.
+For example, here is one that counts pull requests by user:
+
+```python
+import ghizmo.commands.lib as lib
+from collections import defaultdict
+
+def count_prs(config, args):
+  """
+  Show pull requests counted by login.
+  """
+  counts = defaultdict(int)
+  for pr in config.repo.pull_requests(state="closed"):
+    counts[pr.user.login] += 1
+    yield lib.status(pr.number)
+  yield counts
+```
+
+Now running `ghizmo count-prs` will stream JSON output as it tallies, then a tally of closed PRs for each user.
 
 
 ## Maturity

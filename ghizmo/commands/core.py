@@ -1,15 +1,6 @@
-"""
-Pre-defined commands.
-
-Public functions here (not starting with '_') are auto-registered into Ghizmo's command line.
-
-For GitHub the library API, see: https://github.com/sigmavirus24/github3.py
-"""
-
 from __future__ import print_function
 
-import logging as log
-import command_lib as lib
+from ghizmo.commands import lib
 
 
 def tags(config, args):
@@ -97,20 +88,8 @@ def contributors(config, args):
   return config.repo.contributors()
 
 
-def stale_pr_branches(config, args):
+def collaborators(config, args):
   """
-  List "stale" branches that associated with a closed PR and are from the same (non-forked) repository as the base.
+  List all collaborators.
   """
-  repo = config.repo
-  for pr in repo.pull_requests(state="closed"):
-    is_stale = False
-    if pr.head.repo == pr.base.repo:
-      branch = repo.branch(pr.head.ref)
-      if branch:
-        is_stale = True
-    if is_stale:
-      yield {
-        "html_url": pr.html_url,
-        "base_branch": pr.base.ref,
-        "head_branch": pr.head.ref,
-      }
+  return config.repo.collaborators()

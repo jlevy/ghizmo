@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-If commands require input, it must be line-delimited JSON usually just quoted strings.
+If commands require input, it must be line-delimited JSON (e.g. quoted strings).
 
 For further documentation, see: https://github.com/jlevy/ghizmo
 """
@@ -14,7 +14,7 @@ import sys
 import argparse
 
 NAME = "ghizmo"
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 DESCRIPTION = "ghizmo: Extensible GitHub command-line tricks"
 LONG_DESCRIPTION = __doc__
 
@@ -39,8 +39,12 @@ def main():
   import configs
 
   command_directory = ghizmo.command_directory()
-  command_docs = "commands:\n" + "\n".join(["  %s: %s" % (name, doc) for (name, doc) in command_directory])
-
+  command_modules = sorted(set([module for (module, name, doc) in command_directory]))
+  command_docs = \
+    "command modules: %s\n" % ", ".join(command_modules) \
+    + "(augment by adding to ./ghizmo_commands.py)\n\n" \
+    + "commands available:\n" \
+    + "\n".join(["  %s: %s" % (name, doc) for (module, name, doc) in command_directory])
   parser = argparse.ArgumentParser(description=DESCRIPTION, version=VERSION,
                                    epilog="\n" + __doc__ + "\n" + command_docs,
                                    formatter_class=argparse.RawTextHelpFormatter)

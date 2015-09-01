@@ -11,8 +11,11 @@ import sys
 import json
 import yaml
 import inspect
+import os
+import importlib
 import getpass
 from collections import namedtuple
+from collections import OrderedDict
 from functools32 import lru_cache  # functools32 pip
 import github3  # github3.py pip
 from github3.null import NullObject
@@ -75,11 +78,30 @@ def _to_underscore(name):
   return name.replace("-", "_")
 
 
-def all_command_functions():
-  def is_public_func(f):
-    return inspect.isfunction(f) and not f.__name__.startswith("_")
+def _is_public_func(f):
+  return inspect.isfunction(f) and not f.__name__.startswith("_")
 
-  return inspect.getmembers(commands, predicate=is_public_func)
+
+@lru_cache()
+def all_command_functions():
+  # TODO: Clean this up somehow.
+  # Use absolute module path so it works post installation.
+  modules = [importlib.import_module("ghizmo.commands.%s" % module) for module in commands.__all__]
+
+  # If there is a ghizmo_commands.py file in the current directory, use it too.
+  if os.path.exists("ghizmo_commands.py"):
+    modules.append(importlib.import_module("ghizmo_commands"))
+
+  log.info("Imported command modules: %s", modules)
+
+  func_map = {}
+  for module in modules:
+    for (name, func) in inspect.getmembers(module, predicate=_is_public_func):
+      if name in func_map:
+        raise ValueError("Duplicate function name for command: %s" % name)
+      func_map[name] = func
+  # Sort items first by module, then by name.
+  return OrderedDict(sorted(func_map.items(), key=lambda (name, func): (func.__module__, name)))
 
 
 @lru_cache()
@@ -91,19 +113,20 @@ def command_directory(use_dashes=True):
       return "(no pydoc)"
 
   transform = _to_dash if use_dashes else lambda x: x
-  return [(transform(name), doc_for_function(func)) for (name, func) in all_command_functions()]
+  return [(func.__module__, transform(name), doc_for_function(func)) for (name, func) in
+          all_command_functions().iteritems()]
 
 
 @lru_cache()
 def list_commands(use_dashes=True):
-  return [command for (command, doc) in command_directory(use_dashes=use_dashes)]
+  return [command for (module, command, doc) in command_directory(use_dashes=use_dashes)]
 
 
 def get_command_func(command):
   command = _to_underscore(command)
-  if not command in list_commands(use_dashes=False):
+  if not command in all_command_functions():
     raise ValueError("invalid command: %s" % command)
-  return getattr(commands, command)
+  return all_command_functions()[command]
 
 
 def run_command(command, config, args):
@@ -116,7 +139,7 @@ def run_command(command, config, args):
   for result in command_func(config, args):
     config.formatter(result)
 
+
 # TODO:
-# Automagic loading of ghizmo_commands.py files from current directory.
 # Proper streaming of JSON items (as opposed to line-by-line), for use in piping.
 # Prettier SIGPIPE handling
