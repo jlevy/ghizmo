@@ -9,7 +9,7 @@ layered on top of the simple and clean [github3.py](https://github.com/sigmaviru
 It's also easy to add more commands.
 
 It differs from [hub](https://github.com/github/hub) in that it's not focusing on just a few key features to augment `git`.
-Rather, it'sa way to use the full GitHub APIs more easily,
+Rather, it's a way to use the full GitHub APIs more easily,
 and express data in JSON that's modeled directly off the APIs.
 Also, since it's in Python instead of Go, it can be extended without a compile step
 (see command definitions [here](ghizmo/commands) and [below](#custom-commands)).
@@ -65,8 +65,8 @@ $ ghizmo branches
 More complex commands can be defined easily.
 This command looks for non-deleted branches on closed PRs.
 ```bash
-$ ghizmo stale-pr-branches > stale-branches.json
-$ # Edit/review, then actually do it.
+$ ghizmo stale-pr-branches > stale-pr-branches.json
+$ # Edit/review that file, test it, then actually do it.
 $ jq '.head_branch' stale-pr-branches.json | ghizmo delete-branches --dry-run 
 Delete reference: heads/aaa
 Delete reference: heads/bbb
