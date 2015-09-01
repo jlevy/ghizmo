@@ -1,20 +1,23 @@
 # Ghizmo
 
 GitHub's APIs are great, but the friction to using them is often a bit high.
-You have to look up which library is best, then write code by hand to use that library.
+You have to look up which library is best, then write code by hand to use that library,
+wasting time on setup, authentication, etc.
 
 Ghizmo is a simple command-line harness to do more complex things with the GitHub APIs,
 layered on top of the simple and clean [github3.py](https://github.com/sigmavirus24/github3.py)
 library. It's also easy to add more commands.
 
 It differs from [hub](https://github.com/github/hub) in that it's not focusing on just
-a few key features. Rather, it's just a way to use the full APIs more easily.
-Also, since it's in Python instead of Go, it can be extended without a compile step.
+a few key features. Rather, it's just a way to use the full APIs more easily, and writing
+data in JSON that's modeled directly off the APIs. Also, since it's in Python instead of Go,
+it can be extended without a compile step.
 
 ## Examples
 
+Basic access to API, showing responses in JSON:
+
 ```
-$ # Basic access to API:
 $ ghizmo tags --repo torvalds/linux
 {
   "commit": {
@@ -26,7 +29,10 @@ $ ghizmo tags --repo torvalds/linux
   "zipball_url": "https://api.github.com/repos/torvalds/linux/zipball/v4.2-rc8"
 }
 ...
-$ # Combine with other tools.
+```
+
+Combine with other tools:
+```
 $ ghizmo tags --repo torvalds/linux | jq '.tarball_url' | head -1
 "https://api.github.com/repos/torvalds/linux/tarball/v4.2-rc8"
 ...
@@ -39,12 +45,16 @@ $ ghizmo contributors --repo torvalds/linux | jq '.contributions' | histogram.py
   800.0000 -  1600.0000 [    47]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (20.26%)
  1600.0000 -  3200.0000 [    10]: ∎∎∎∎∎∎∎∎∎∎ (4.31%)
  3200.0000 - 15475.0000 [     7]: ∎∎∎∎∎∎∎ (3.02%)
- 
-$ # Infer current repository from .git/config:
+```
+
+You may skip the `--repo` option and Ghizmo will infer the current repository if you are in a working directory with a GitHub origin:
+```
 $ ghizmo branches
 ...
-$ # More complex commands can be defined easily.
-$ # This command looks for non-deleted branches on closed PRs.
+```
+
+More complex commands can be defined easily. This command looks for non-deleted branches on closed PRs.
+```
 $ ghizmo stale-pr-branches > stale-branches.json
 $ # Edit/review, then actually do it.
 $ jq '.head_branch' stale-pr-branches.json | ghizmo delete-branches --dry-run 
@@ -84,3 +94,7 @@ username: my-github-id
 # Personal access token for the above GitHub account:
 access_token: aaaaaaaaaabbbbbbbbbbbccccccccc1234567890
 ```
+
+## Maturity
+
+One-day hack. Could be extended a lot, but seems to work.
