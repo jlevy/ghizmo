@@ -50,10 +50,17 @@ $ ghizmo contributors --repo torvalds/linux | jq '.contributions' | histogram.py
 You may skip the `--repo` option and Ghizmo will infer the current repository if you are in a working directory with a GitHub origin:
 ```
 $ ghizmo branches
-...
+{
+  "commit": {
+    "sha": "4c41820409e9394778b7b17d9b831f81d51a03bc", 
+    "url": "https://api.github.com/repos/jlevy/ghizmo/commits/4c41820409e9394778b7b17d9b831f81d51a03bc"
+  }, 
+  "name": "master"
+}
 ```
 
-More complex commands can be defined easily. This command looks for non-deleted branches on closed PRs.
+More complex commands can be defined easily.
+This command looks for non-deleted branches on closed PRs.
 ```
 $ ghizmo stale-pr-branches > stale-branches.json
 $ # Edit/review, then actually do it.
