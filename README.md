@@ -84,8 +84,8 @@ so you can perform operations such as the ones above that process JSON outputs.
 
 ## Configuration
 
-You can supply all arguments from the command line, but to enable it to use APIs without typing your
-password, add a `~/.ghizmo.yml` file:
+You can supply username and password from the command line, but you probably want to be able to use APIs without typing your
+password. To do this, add a `~/.ghizmo.yml` file:
 
 ```
 # Ghizmo configuration
@@ -94,6 +94,9 @@ username: my-github-id
 # Personal access token for the above GitHub account:
 access_token: aaaaaaaaaabbbbbbbbbbbccccccccc1234567890
 ```
+
+Create an access token [here](https://github.com/settings/tokens) to use with Ghizmo.
+
 
 ## Maturity
 
