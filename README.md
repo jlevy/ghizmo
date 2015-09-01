@@ -5,13 +5,14 @@ You have to look up which library is best, then write code by hand to use that l
 wasting time on setup, authentication, etc.
 
 Ghizmo is a simple command-line harness to do more complex things with the GitHub APIs,
-layered on top of the simple and clean [github3.py](https://github.com/sigmavirus24/github3.py)
-library. It's also easy to add more commands.
+layered on top of the simple and clean [github3.py](https://github.com/sigmavirus24/github3.py) library.
+It's also easy to add more commands.
 
-It differs from [hub](https://github.com/github/hub) in that it's not focusing on just
-a few key features. Rather, it's just a way to use the full APIs more easily, and writing
-data in JSON that's modeled directly off the APIs. Also, since it's in Python instead of Go,
-it can be extended without a compile step.
+It differs from [hub](https://github.com/github/hub) in that it's not focusing on just a few key features.
+Rather, it's just a way to use the full APIs more easily,
+and express data in JSON that's modeled directly off the APIs.
+Also, since it's in Python instead of Go, it can be extended without a compile step
+(see command definitions [here](ghizmo/commands) and [below](#custom-commands)).
 
 ## Examples
 
@@ -97,7 +98,7 @@ so you can perform operations such as the ones above that process JSON outputs.
 ## Configuration
 
 You can supply username and password from the command line, but you probably want to be able to use APIs without typing your
-password. To do this, add a `~/.ghizmo.yml` file:
+password. To do this, create a `~/.ghizmo.yml` file:
 
 ```yaml
 # Ghizmo configuration
@@ -107,12 +108,12 @@ username: my-github-id
 access_token: aaaaaaaaaabbbbbbbbbbbccccccccc1234567890
 ```
 
-Create an access token [here](https://github.com/settings/tokens) to use with Ghizmo.
+Create an access token on [your GitHub settings page](https://github.com/settings/tokens) to use with Ghizmo.
 
 
 ## Custom commands
 
-To add a new command, create a `ghizmo_commands.py` file in your current directory.
+To add a new command, create a file `ghizmo_commands.py` in your current directory.
 For example, here is one that counts pull requests by user:
 
 ```python
@@ -121,16 +122,18 @@ from collections import defaultdict
 
 def count_prs(config, args):
   """
-  Show pull requests counted by login.
+  Show tallies of pull requests by author login name.
   """
   counts = defaultdict(int)
   for pr in config.repo.pull_requests(state="closed"):
     counts[pr.user.login] += 1
-    yield lib.status(pr.number)
+    yield { "status": "I'm at PR %s!" % pr.number }
+  
   yield counts
 ```
 
-Now running `ghizmo count-prs` will stream JSON output as it tallies, then a tally of closed PRs for each user.
+Now running `ghizmo count-prs` (note the dash) will stream JSON messages as it tallies,
+then write a tally of closed PRs for each user.
 
 
 ## Maturity
