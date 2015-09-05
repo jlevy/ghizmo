@@ -66,8 +66,8 @@ def print_formatter(format=None):
 
   return printer
 
-# The configuration to run.
-Config = namedtuple("Config", "repo formatter")
+# All data used by the run of a command.
+Config = namedtuple("Config", "github repo formatter")
 
 
 def _to_dash(name):
@@ -107,10 +107,10 @@ def all_command_functions():
 @lru_cache()
 def command_directory(use_dashes=True):
   def doc_for_function(func):
-    if func.__doc__:
-      return func.__doc__.strip()
-    else:
-      return "(no pydoc)"
+    doc = func.__doc__ and func.__doc__.strip()
+    if not doc:
+      doc = "(no pydoc)"
+    return doc
 
   transform = _to_dash if use_dashes else lambda x: x
   return [(func.__module__, transform(name), doc_for_function(func)) for (name, func) in
@@ -139,7 +139,7 @@ def run_command(command, config, args):
   for result in command_func(config, args):
     config.formatter(result)
 
-
 # TODO:
-# Proper streaming of JSON items (as opposed to line-by-line), for use in piping.
+# Control pretty-printing, using one object per line by default, but with --pretty option to print nicely
+# Proper reading of JSON streams (as opposed to line-by-line), for use in piping
 # Prettier SIGPIPE handling
