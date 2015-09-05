@@ -197,10 +197,11 @@ ghizmo octotech-create-repo -a name=ninth-leg -a description="Yet another reposi
 
 ## Convenience
 
-The idea here is that you can easily save/commit your `ghizmo_commands.py` file to Git,
+The idea here is both to provide simple commands, but also to allow more custom or complex use.
+You can easily save/commit commands you write to `ghizmo_commands.py` file to Git,
 and your teammates can then use the same commands.
 This means you can automate setup and configuration of GitHub repositories, teams, etc. in a flexible way.
-If there're generally useful, please [submit a PR](pulls) and I'll gladly merge it for use by everyone.
+If there're generally useful, please submit a PR and I'll gladly merge it for use by everyone.
 
 ## Maturity
 
