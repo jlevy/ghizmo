@@ -4,8 +4,10 @@
 
 Ghizmo is an extensible command line for GitHub.
 
-GitHub's APIs are great, but the friction to using them can be a bit high.
-You have to look up which library is best, then write code to use that library,
+[GitHub's APIs](https://developer.github.com/v3/)
+are exceptionally powerful, but the friction to using them can be a bit high.
+You have to [look up which library is best](https://developer.github.com/libraries/),
+then write code to use that library,
 spending time on trial and error with setup, authentication, etc.
 Once you get something working, the result is probably not a reusable script without additional effort.
 
@@ -19,13 +21,13 @@ by putting them into a simple `ghizmo_commands.py` file,
 and they become automatically available.
 
 Essentially, it's just a harness around the clean and complete [github3.py](https://github.com/sigmavirus24/github3.py) library.
-It differs from the standard option [hub](https://github.com/github/hub) in that it's not focusing on just a few key features to augment `git`.
+It differs from the standard option [hub](https://github.com/github/hub) in that it's not focusing key features to augment the `git` command.
 Rather, it's a way to use the full GitHub APIs more easily.
 (Also, since it's in Python, not Go, it can be extended without a compile step.)
 
 ## Examples
 
-Command definition are [here](ghizmo/commands) and [below](#custom-commands).
+Commands are all defined [here](ghizmo/commands) and [below](#custom-commands).
 
 Basic access to API, showing responses in JSON:
 
@@ -41,10 +43,10 @@ $ ghizmo tags --repo torvalds/linux
   "zipball_url": "https://api.github.com/repos/torvalds/linux/zipball/v4.2-rc8"
 }
 ...
-$
 ```
 
-Combine with other tools:
+The advantage to JSON is it's easy to combine with other tools.
+Here's a histogram of number contributions for all Linux kernel contributors:
 
 ```bash
 $ ghizmo tags --repo torvalds/linux | jq '.tarball_url' | head -1
@@ -59,7 +61,6 @@ $ ghizmo contributors --repo torvalds/linux | jq '.contributions' | histogram.py
   800.0000 -  1600.0000 [    47]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (20.26%)
  1600.0000 -  3200.0000 [    10]: ∎∎∎∎∎∎∎∎∎∎ (4.31%)
  3200.0000 - 15475.0000 [     7]: ∎∎∎∎∎∎∎ (3.02%)
-$
 ```
 
 You may skip the `--repo` option and Ghizmo will infer the current repository if you are in a working directory with a GitHub origin:
@@ -73,11 +74,11 @@ $ ghizmo branches
   },
   "name": "master"
 }
-$
 ```
 
 Commands can take arguments.
-This command lists teams, and requires an organization name:
+This command lists teams, and requires an organization name
+(should you forget an argument required by a command, you'll be rudely advised of your oversight):
 
 ```bash
 $ ghizmo teams -a org_name=OctoTech
@@ -92,11 +93,11 @@ $ ghizmo teams -a org_name=OctoTech
   "url": "https://api.github.com/teams/999"
 }
 ...
-$
 ```
 
 More complex commands can be defined easily.
-This command looks for non-deleted branches on closed PRs.
+If you've ever had a messy GitHub repository to clean up, you might like this one,
+which looks for non-deleted branches on closed PRs.
 ```bash
 $ ghizmo stale-pr-branches > stale-pr-branches.json
 ```
@@ -116,7 +117,6 @@ $ jq '.head_branch' stale-pr-branches.json | ghizmo delete-branches
   "dry_run": false
 }
 ...
-$
 ```
 
 Run `ghizmo --help` for a list of commands -- and see below on how to add new commands.
@@ -151,7 +151,6 @@ access_token: aaaaaaaaaabbbbbbbbbbbccccccccc1234567890
 
 Create an access token on [your GitHub settings page](https://github.com/settings/tokens) to use with Ghizmo.
 
-
 ## Custom commands
 
 To add a new command, create a file `ghizmo_commands.py` in your current directory.
@@ -183,19 +182,29 @@ def octotech_create_repo(config, args):
     has_issues=False, has_wiki=False, team_id=team_id)
 ```
 
-Now running `ghizmo count-prs` (note the dash) will stream JSON messages as it tallies,
+Now running
+```bash
+ghizmo count-prs
+```
+(note the dash) will stream JSON messages as it tallies,
 then write a tally of closed PRs for each user.
 
-To use the second command, you need to specify custom arguments
-(should you forget, you'll be rudely advised of your oversight):
+To use the second command, you need to specify custom arguments:
 
+```bash
+ghizmo octotech-create-repo -a name=ninth-leg -a description="Yet another repository!"
 ```
-ghizmo octotech-create-repo -a name=ninth-leg -a description="A repo "
-```
+
+## Convenience
+
+The idea here is that you can easily save/commit your `ghizmo_commands.py` file to Git,
+and your teammates can then use the same commands.
+This means you can automate setup and configuration of GitHub repositories, teams, etc. in a flexible way.
+If there're generally useful, please [submit a PR](pulls) and I'll gladly merge it for use by everyone.
 
 ## Maturity
 
-One-day hack. Could be extended a lot, but seems to work.
+Mostly a one-day hack. Could be extended a lot, but seems to work.
 
 ## Contributing
 
@@ -205,4 +214,4 @@ File issues for bugs or general discussion.
 
 ## License
 
-Apache
+Apache 2
