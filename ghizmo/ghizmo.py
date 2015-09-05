@@ -66,6 +66,7 @@ def print_formatter(format=None):
 
   return printer
 
+
 # All data used by the run of a command.
 Config = namedtuple("Config", "github repo formatter")
 
@@ -136,8 +137,10 @@ def run_command(command, config, args):
   log.info("Args: %s", args)
   # This executes the command step by step, either just to display results, or to display progress
   # on an action with side effects.
-  for result in command_func(config, args):
-    config.formatter(result)
+  iterable_result = command_func(config, args)
+  if iterable_result:
+    for result in iterable_result:
+      config.formatter(result)
 
 # TODO:
 # Control pretty-printing, using one object per line by default, but with --pretty option to print nicely

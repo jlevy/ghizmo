@@ -15,7 +15,7 @@ import os
 import argparse
 
 NAME = "ghizmo"
-VERSION = "0.1.4"
+VERSION = "0.1.5"
 DESCRIPTION = "ghizmo: Extensible GitHub command-line tricks"
 LONG_DESCRIPTION = __doc__
 
@@ -64,17 +64,11 @@ class UserArgs(object):
 def assemble_args(cmdline_args):
   assembled = UserArgs()
 
-  arg_list = []
-  if cmdline_args.arg:
-    if isinstance(cmdline_args.arg, basestring):
-      arg_list.append(cmdline_args.arg)
-    else:
-      arg_list.extend(cmdline_args.arg)
-
+  user_arg_list = cmdline_args.arg or []
   d = {}
-  for arg in arg_list:
+  for arg in user_arg_list:
     try:
-      (key, value) = arg.split("=")
+      (key, value) = arg.split("=", 1)
     except:
       raise ValueError("Could not parse argument -- invalid format: '%s'" % arg)
     d[key] = value
@@ -93,6 +87,9 @@ def assemble_args(cmdline_args):
 
 
 def main():
+  # Bootstrap logging right up front, so we do it before assembling commands for help.
+  log_setup(log.DEBUG if "--debug" in sys.argv else log.WARN)
+
   import ghizmo
   import configs
 
@@ -116,11 +113,9 @@ def main():
   parser.add_argument("-n", "--dry-run", help="dry run: log actions but don't do anything", action="store_true")
   parser.add_argument("--state", help="pull requests state", choices=["open", "closed", "all"])
   parser.add_argument("--format", help="output format", choices=["json", "yaml"])
-  parser.add_argument("-a", "--arg", help="argument of the form key=value (may repeat this)")
+  parser.add_argument("-a", "--arg", help="argument of the form key=value (may repeat this)", action="append")
 
   args = parser.parse_args()
-
-  log_setup(log.DEBUG if args.debug else log.WARN)
 
   # Validate credentials and log in.
   gh = ghizmo.login(username=args.username)
@@ -128,17 +123,24 @@ def main():
     raise ValueError("Login failure")
 
   # Validate repository.
-  repo = None
-  try:
-    if args.repo:
+  owner = None
+  repo_name = None
+  if args.repo:
+    try:
       (owner, repo_name) = args.repo.split("/")
-    else:
+    except:
+      raise ValueError("Invalid repository (use format owner/repo-name): %s" % args.repo)
+  else:
+    try:
       (owner, repo_name) = configs.infer_repo()
+    except:
+      log.debug("couldn't infer repository", exc_info=True)
+
+  repo = None
+  if owner and repo_name:
     repo = gh.repository(owner, repo_name)
     if not repo:
       raise ValueError("Couldn't access repository: %s/%s" % (owner, repo_name))
-  except:
-    log.debug("couldn't infer repository", exc_info=True)
 
   # Assemble config for this run.
   formatter = ghizmo.print_formatter(args.format)
