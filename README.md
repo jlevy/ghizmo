@@ -1,20 +1,31 @@
 # Ghizmo
 
-GitHub's APIs are great, but the friction to using them is often a bit high.
-You have to look up which library is best, then write code by hand to use that library,
-wasting time on setup, authentication, etc.
+![Octopus hose](images/xk8-octopus-hose-180.png)
 
-Ghizmo is a simple command-line harness to do more complex things with the GitHub APIs,
-layered on top of the simple and clean [github3.py](https://github.com/sigmavirus24/github3.py) library.
-It's also easy to add more commands.
+Ghizmo is an extensible command line for GitHub.
 
-It differs from [hub](https://github.com/github/hub) in that it's not focusing on just a few key features to augment `git`.
-Rather, it's a way to use the full GitHub APIs more easily,
-and express data in JSON that's modeled directly off the APIs.
-Also, since it's in Python instead of Go, it can be extended without a compile step
-(see command definitions [here](ghizmo/commands) and [below](#custom-commands)).
+GitHub's APIs are great, but the friction to using them can be a bit high.
+You have to look up which library is best, then write code to use that library,
+spending time on trial and error with setup, authentication, etc.
+Once you get something working, the result is probably not a reusable script without additional effort.
+
+Ghizmo lets you do complex things with the GitHub APIs from the command line,
+so you can automate reading, creating, or managing GitHub
+repos, contributor statistics, pull requests, teams, etc.
+Its JSON output is modeled directly off the APIs,
+and can be piped into other tools.
+It's also easy to add, save, and share more commands you perform frequently,
+by putting them into a simple `ghizmo_commands.py` file,
+and they become automatically available.
+
+Essentially, it's just a harness around the clean and complete [github3.py](https://github.com/sigmavirus24/github3.py) library.
+It differs from the standard option [hub](https://github.com/github/hub) in that it's not focusing on just a few key features to augment `git`.
+Rather, it's a way to use the full GitHub APIs more easily.
+(Also, since it's in Python, not Go, it can be extended without a compile step.)
 
 ## Examples
+
+Command definition are [here](ghizmo/commands) and [below](#custom-commands).
 
 Basic access to API, showing responses in JSON:
 
@@ -22,14 +33,15 @@ Basic access to API, showing responses in JSON:
 $ ghizmo tags --repo torvalds/linux
 {
   "commit": {
-    "sha": "c13dcf9f2d6f5f06ef1bf79ec456df614c5e058b", 
+    "sha": "c13dcf9f2d6f5f06ef1bf79ec456df614c5e058b",
     "url": "https://api.github.com/repos/torvalds/linux/commits/c13dcf9f2d6f5f06ef1bf79ec456df614c5e058b"
-  }, 
-  "name": "v4.2-rc8", 
-  "tarball_url": "https://api.github.com/repos/torvalds/linux/tarball/v4.2-rc8", 
+  },
+  "name": "v4.2-rc8",
+  "tarball_url": "https://api.github.com/repos/torvalds/linux/tarball/v4.2-rc8",
   "zipball_url": "https://api.github.com/repos/torvalds/linux/zipball/v4.2-rc8"
 }
 ...
+$
 ```
 
 Combine with other tools:
@@ -47,6 +59,7 @@ $ ghizmo contributors --repo torvalds/linux | jq '.contributions' | histogram.py
   800.0000 -  1600.0000 [    47]: ∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎∎ (20.26%)
  1600.0000 -  3200.0000 [    10]: ∎∎∎∎∎∎∎∎∎∎ (4.31%)
  3200.0000 - 15475.0000 [     7]: ∎∎∎∎∎∎∎ (3.02%)
+$
 ```
 
 You may skip the `--repo` option and Ghizmo will infer the current repository if you are in a working directory with a GitHub origin:
@@ -55,25 +68,53 @@ You may skip the `--repo` option and Ghizmo will infer the current repository if
 $ ghizmo branches
 {
   "commit": {
-    "sha": "4c41820409e9394778b7b17d9b831f81d51a03bc", 
+    "sha": "4c41820409e9394778b7b17d9b831f81d51a03bc",
     "url": "https://api.github.com/repos/jlevy/ghizmo/commits/4c41820409e9394778b7b17d9b831f81d51a03bc"
-  }, 
+  },
   "name": "master"
 }
+$
+```
+
+Commands can take arguments.
+This command lists teams, and requires an organization name:
+
+```bash
+$ ghizmo teams -a org_name=OctoTech
+{
+  "description": "OctoTech",
+  "id": 999,
+  "members_url": "https://api.github.com/teams/999/members{/member}",
+  "name": "Owners",
+  "permission": "admin",
+  "repositories_url": "https://api.github.com/teams/999/repos",
+  "slug": "owners",
+  "url": "https://api.github.com/teams/999"
+}
+...
+$
 ```
 
 More complex commands can be defined easily.
 This command looks for non-deleted branches on closed PRs.
 ```bash
 $ ghizmo stale-pr-branches > stale-pr-branches.json
-$ # Edit/review that file, test it, then actually do it.
-$ jq '.head_branch' stale-pr-branches.json | ghizmo delete-branches --dry-run 
-Delete reference: heads/aaa
-Delete reference: heads/bbb
+```
+
+You edit/review that file, then test and perform deletions:
+
+```
+$ jq '.head_branch' stale-pr-branches.json | ghizmo delete-branches --dry-run
+{
+  "message": "Deleted heads/aaa",
+  "dry_run": true
+}
 ...
 $ jq '.head_branch' stale-pr-branches.json | ghizmo delete-branches
-Delete reference: heads/aaa
-Delete reference: heads/bbb
+{
+  "message": "Deleted heads/aaa",
+  "dry_run": false
+}
 ...
 $
 ```
@@ -91,7 +132,7 @@ pip install ghizmo
 
 Ghizmo benefits if `git` is in your path so it can auto-detect your repository config.
 You may also want to install tools like
-[`jq`](https://github.com/stedolan/jq) or [data_hacks](https://github.com/bitly/data_hacks) 
+[`jq`](https://github.com/stedolan/jq) or [data_hacks](https://github.com/bitly/data_hacks)
 so you can perform operations such as the ones above that process JSON outputs.
 
 
@@ -128,14 +169,40 @@ def count_prs(config, args):
   for pr in config.repo.pull_requests(state="closed"):
     counts[pr.user.login] += 1
     yield { "status": "I'm at PR %s!" % pr.number }
-  
+
   yield counts
+
+def octotech_create_repo(config, args):
+  """
+  If you like, your command can be custom, e.g. to your organization.
+  This creates a repo within your org owned by a specific team.
+  """
+  org = config.github.organization("OctoTech")
+  team_id = 1234567890  # OctoTech engineering team
+  repo = org.create_repository(args.name, description=args.description, private=True,
+    has_issues=False, has_wiki=False, team_id=team_id)
 ```
 
 Now running `ghizmo count-prs` (note the dash) will stream JSON messages as it tallies,
 then write a tally of closed PRs for each user.
 
+To use the second command, you need to specify custom arguments
+(should you forget, you'll be rudely advised of your oversight):
+
+```
+ghizmo octotech-create-repo -a name=ninth-leg -a description="A repo "
+```
 
 ## Maturity
 
 One-day hack. Could be extended a lot, but seems to work.
+
+## Contributing
+
+Yes, please!
+We need more commands in the library.
+File issues for bugs or general discussion.
+
+## License
+
+Apache
