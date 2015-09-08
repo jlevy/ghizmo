@@ -91,6 +91,7 @@ def all_command_functions():
 
   # If there is a ghizmo_commands.py file in the current directory, use it too.
   if os.path.exists("ghizmo_commands.py"):
+    sys.path.insert(1, '.')  # This is needed only on some installations.
     modules.append(importlib.import_module("ghizmo_commands"))
 
   log.info("Imported command modules: %s", modules)

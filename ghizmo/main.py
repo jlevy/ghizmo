@@ -15,7 +15,7 @@ import os
 import argparse
 
 NAME = "ghizmo"
-VERSION = "0.1.5"
+VERSION = "0.1.6"
 DESCRIPTION = "ghizmo: An extensible command line for GitHub"
 LONG_DESCRIPTION = __doc__
 
