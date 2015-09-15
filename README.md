@@ -29,6 +29,10 @@ Rather, it's a way to use the full GitHub APIs more easily.
 
 Commands are all defined [here](ghizmo/commands) and [below](#custom-commands).
 
+Run `ghizmo --help` for a list of commands -- and see below on how to add new commands.
+
+### Simple commands
+
 Basic access to API, showing responses in JSON:
 
 ```bash
@@ -74,7 +78,11 @@ $ ghizmo branches
   },
   "name": "master"
 }
+$ ghizmo releases
+...
 ```
+
+### Command arguments
 
 Commands can take arguments.
 This command lists teams, and requires an organization name
@@ -92,11 +100,17 @@ $ ghizmo teams -a org_name=OctoTech
   "slug": "owners",
   "url": "https://api.github.com/teams/999"
 }
-...
 ```
 
-More complex commands can be defined easily.
-If you've ever had a messy GitHub repository to clean up, you might like this one,
+It's also helpful for scripting releases:
+
+```bash
+$ ghizmo create-release -a name=0.9.99 -a tag_name=0.9.99 -a prerelease=true
+```
+
+### A more complex example
+
+If you've ever had a messy GitHub repository to clean up, you might like this command,
 which looks for non-deleted branches on closed PRs.
 ```bash
 $ ghizmo stale-pr-branches > stale-pr-branches.json
@@ -118,9 +132,6 @@ $ jq '.head_branch' stale-pr-branches.json | ghizmo delete-branches
 }
 ...
 ```
-
-Run `ghizmo --help` for a list of commands -- and see below on how to add new commands.
-
 
 ## Installation
 
