@@ -93,3 +93,19 @@ def collaborators(config, args):
   List all collaborators.
   """
   return config.repo.collaborators()
+
+
+def releases(config, args):
+  """
+  List all releases.
+  """
+  return config.repo.releases()
+
+
+def create_release(config, args):
+  """
+  Create a new release.
+  """
+  return config.repo.create_release(args.tag_name, name=args.name,
+                                    target_commitish=args.get("target_commmitish"), body=args.get("body"),
+                                    draft=args.get_bool("draft"), prerelease=args.get_bool("prerelease"))

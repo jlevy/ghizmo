@@ -31,3 +31,12 @@ def input_json_lines():
   """
   for line in sys.stdin:
     yield json.loads(line)
+
+
+def to_bool(str):
+  if str in [True, "True", "true"]:
+    return True
+  elif str in [False, "False", "false"]:
+    return False
+  else:
+    raise ValueError("Not a boolean: %r" % str)

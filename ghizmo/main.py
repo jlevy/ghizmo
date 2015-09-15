@@ -13,9 +13,10 @@ import logging as log
 import sys
 import os
 import argparse
+from commands.lib import to_bool
 
 NAME = "ghizmo"
-VERSION = "0.1.6"
+VERSION = "0.1.7"
 DESCRIPTION = "ghizmo: An extensible command line for GitHub"
 LONG_DESCRIPTION = __doc__
 
@@ -50,6 +51,12 @@ class UserArgs(object):
 
   def add_implicit(self, d):
     self.dict.update(d)
+
+  def get(self, item, default=None):
+    return self.dict[item] if item in self.dict else default
+
+  def get_bool(self, item, default=False):
+    return to_bool(self.get(item, default))
 
   def __getattr__(self, item):
     try:
