@@ -16,7 +16,7 @@ import argparse
 from commands.lib import to_bool
 
 NAME = "ghizmo"
-VERSION = "0.1.7"
+VERSION = "0.1.8"
 DESCRIPTION = "ghizmo: An extensible command line for GitHub"
 LONG_DESCRIPTION = __doc__
 

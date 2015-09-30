@@ -34,6 +34,14 @@ def branches(config, args):
   return config.repo.branches()
 
 
+def branches_full(config, args):
+  """
+  List full info about all branches.
+  """
+  for b in config.repo.branches():
+    yield config.repo.branch(b.name)
+
+
 def show_branches(config, args):
   """
   Show branches supplied on stdin.
@@ -107,5 +115,5 @@ def create_release(config, args):
   Create a new release.
   """
   yield config.repo.create_release(args.tag_name, name=args.name,
-                                   target_commitish=args.get("target_commmitish"), body=args.get("body"),
+                                   target_commitish=args.get("target_commitish"), body=args.get("body"),
                                    draft=args.get_bool("draft"), prerelease=args.get_bool("prerelease"))

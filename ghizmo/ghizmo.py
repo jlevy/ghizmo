@@ -8,6 +8,7 @@ __author__ = 'jlevy'
 
 import logging as log
 import sys
+import re
 import json
 import yaml
 import inspect
@@ -109,7 +110,7 @@ def all_command_functions():
 @lru_cache()
 def command_directory(use_dashes=True):
   def doc_for_function(func):
-    doc = func.__doc__ and func.__doc__.strip()
+    doc = func.__doc__ and re.sub("\s+", " ", func.__doc__).strip()
     if not doc:
       doc = "(no pydoc)"
     return doc
