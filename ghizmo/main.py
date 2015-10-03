@@ -16,7 +16,7 @@ import argparse
 from commands.lib import to_bool
 
 NAME = "ghizmo"
-VERSION = "0.1.8"
+VERSION = "0.1.9"
 DESCRIPTION = "ghizmo: An extensible command line for GitHub"
 LONG_DESCRIPTION = __doc__
 
@@ -86,7 +86,6 @@ def assemble_args(cmdline_args):
   assembled.add_explicit({
     "dry_run": cmdline_args.dry_run,
     "force": cmdline_args.force,
-    "state": cmdline_args.state,
     "format": cmdline_args.format
   })
 
@@ -118,7 +117,6 @@ def main():
   # Command arguments:
   parser.add_argument("-f", "--force", help="enable debugging output", action="store_true")
   parser.add_argument("-n", "--dry-run", help="dry run: log actions but don't do anything", action="store_true")
-  parser.add_argument("--state", help="pull requests state", choices=["open", "closed", "all"])
   parser.add_argument("--format", help="output format", choices=["json", "yaml"])
   parser.add_argument("-a", "--arg", help="argument of the form key=value (may repeat this)", action="append")
 

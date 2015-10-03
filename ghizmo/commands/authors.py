@@ -6,6 +6,7 @@ import os
 import codecs
 import yaml
 import urllib
+from collections import defaultdict
 
 _ROLES_FILES = ["authors-info.yml", "authors-info.json", "admin/authors-info.yml", "admin/authors-info.json"]
 
@@ -31,6 +32,7 @@ def assemble_authors(config, args):
       header = info.get("header")
       footer = info.get("footer")
       roles = info.get("roles")
+      exclude = info.get("exclude")
   else:
     yield lib.status("No roles file")
 
@@ -39,10 +41,10 @@ def assemble_authors(config, args):
     user = github.user(contributor.login)
     author_list.append((user.login, user.name, roles.get(user.login)))
 
-  # Sort alphabetically by login.
-  author_list.sort()
-
   yield lib.status("Read %s authors" % len(author_list))
+
+  # Sort alphabetically by login.
+  author_list.sort(key=lambda (login, name, role): login.lower())
 
   def format_user(login, name):
     if login and name:
@@ -52,19 +54,37 @@ def assemble_authors(config, args):
     else:
       raise ValueError("Missing login name")
 
+  commit_tallies = {}
+  for stat in repo.contributor_statistics():
+    commit_tallies[stat.author.login] = stat.total
+
+  yield lib.status("Read %s contributor stats" % len(commit_tallies))
+
+  issue_tallies = defaultdict(int)
+  for issue in repo.issues(state="all"):
+    issue_tallies[issue.user.login] += 1
+
+  yield lib.status("Read %s issues/PRs" % len(issue_tallies))
+
   with codecs.open("AUTHORS.md", "w", "utf-8") as f:
     f.write(u"# Authors\n\n")
     if header:
       f.write(u"%s\n\n" % header)
     for (login, name, role) in author_list:
+      if login in exclude:
+        continue
+
       user_url = "https://github.com/%s" % login
       # Link to commits by that author
+      commits_count = commit_tallies.get(login, 0)
       commits_url = "%s/commits?author=%s" % (repo.html_url, urllib.quote_plus(login))
       # Link to issues and PRs by that author.
+      issues_count = issue_tallies.get(login, 0)
       issues_url = "%s/issues?q=%s" % (repo.html_url, urllib.quote_plus("author:%s" % login))
 
       role_str = u" \u2014 _%s_" % role if role else ""
-      f.write(u"* [%s](%s) [[commits](%s), [issues](%s)]%s\n" % (format_user(login, name), user_url, commits_url, issues_url, role_str))
+      f.write(u"* [%s](%s) \u2014 [%s+](%s)/[%s+](%s)%s\n" % \
+        (format_user(login, name), user_url, commits_count, commits_url, issues_count, issues_url, role_str))
     if footer:
       f.write(u"\n%s\n\n" % footer)
 

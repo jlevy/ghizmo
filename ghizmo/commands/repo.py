@@ -85,8 +85,7 @@ def pull_requests(config, args):
   """
   List all PRs.
   """
-  state = args.state or "open"
-  return config.repo.pull_requests(state=state)
+  return config.repo.pull_requests(state=args.get("state", "open"))
 
 
 def contributors(config, args):
@@ -95,6 +94,11 @@ def contributors(config, args):
   """
   return config.repo.contributors()
 
+def contributor_stats(config, args):
+  """
+  List contributor statistics.
+  """
+  return config.repo.contributor_statistics()
 
 def collaborators(config, args):
   """
@@ -117,3 +121,9 @@ def create_release(config, args):
   yield config.repo.create_release(args.tag_name, name=args.name,
                                    target_commitish=args.get("target_commitish"), body=args.get("body"),
                                    draft=args.get_bool("draft"), prerelease=args.get_bool("prerelease"))
+
+def issues(config, args):
+  """
+  List issues.
+  """
+  return config.repo.issues(state=args.get("state"))
