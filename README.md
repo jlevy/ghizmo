@@ -133,6 +133,12 @@ $ jq '.head_branch' stale-pr-branches.json | ghizmo delete-branches
 ...
 ```
 
+### Tracking contributors
+
+Another command of interest may be `assemble-authors`.
+It looks at GitHub history and creates an `AUTHORS.md` file, also including role information and additional configurable headers and footers. See [this example](https://github.com/jlevy/the-art-of-command-line/blob/master/AUTHORS.md).
+
+
 ## Installation
 
 Requires Python 2.7+. Then (with sudo if desired):
