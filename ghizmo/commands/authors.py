@@ -24,6 +24,7 @@ def assemble_authors(config, args):
 
   header = None
   footer = None
+  # Assemble roles, keyed by login.
   roles = {}
   if roles_filename:
     yield lib.status("Info from: %s" % roles_filename)
@@ -40,6 +41,16 @@ def assemble_authors(config, args):
   for contributor in repo.contributors():
     user = github.user(contributor.login)
     author_list.append((user.login, user.name, roles.get(user.login)))
+
+  # If any roles are listed but were somehow missing from the contributors return by the API
+  # (for example the commits weren't linked up to the account properly), include them too.
+  contributors_found = { contributor.login for contributor in repo.contributors() }
+  for login in roles:
+    if login not in contributors_found:
+      user = github.user(login)
+      user_name = user.name if user else None
+      yield lib.status("Author has a role but is not returned by GitHub as a contributor: %s (%s)" % (login, user_name))
+      author_list.append((login, user_name, roles.get(login)))
 
   yield lib.status("Read %s authors" % len(author_list))
 

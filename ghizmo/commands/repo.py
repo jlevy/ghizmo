@@ -126,4 +126,8 @@ def issues(config, args):
   """
   List issues.
   """
-  return config.repo.issues(state=args.get("state"))
+  return config.repo.issues(milestone=args.get("milestone"), state=args.get("state"),
+                            assignee=args.get("assignee"), mentioned=args.get("mentioned"),
+                            labels=args.get("labels"), sort=args.get("sort"),
+                            direction=args.get("direction"), since=args.get("since"),
+                            number=args.get("number", -1))
