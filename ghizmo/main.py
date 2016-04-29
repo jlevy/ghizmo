@@ -16,7 +16,7 @@ import argparse
 from commands.lib import to_bool
 
 NAME = "ghizmo"
-VERSION = "0.1.9"
+VERSION = "0.1.10"
 DESCRIPTION = "ghizmo: An extensible command line for GitHub"
 LONG_DESCRIPTION = __doc__
 
@@ -39,6 +39,7 @@ def log_setup(level):
 class UserArgs(object):
   """
   Assembles user-supplied arguments plus environment vars for convenient access.
+  Validation on types and on required arguments happens here.
   """
 
   def __init__(self):
@@ -57,6 +58,14 @@ class UserArgs(object):
 
   def get_bool(self, item, default=False):
     return to_bool(self.get(item, default))
+
+  def get_int(self, item, default):
+    val = self.get(item, default)
+    return None if val is None else int(val)
+
+  def get_float(self, item, default):
+    val = self.get(item, default)
+    return None if val is None else float(val)
 
   def __getattr__(self, item):
     try:

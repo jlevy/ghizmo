@@ -94,11 +94,13 @@ def contributors(config, args):
   """
   return config.repo.contributors()
 
+
 def contributor_stats(config, args):
   """
   List contributor statistics.
   """
   return config.repo.contributor_statistics()
+
 
 def collaborators(config, args):
   """
@@ -114,6 +116,13 @@ def releases(config, args):
   return config.repo.releases()
 
 
+def stargazers(config, args):
+  """
+  List all stargazers.
+  """
+  return config.repo.stargazers()
+
+
 def create_release(config, args):
   """
   Create a new release.
@@ -121,6 +130,7 @@ def create_release(config, args):
   yield config.repo.create_release(args.tag_name, name=args.name,
                                    target_commitish=args.get("target_commitish"), body=args.get("body"),
                                    draft=args.get_bool("draft"), prerelease=args.get_bool("prerelease"))
+
 
 def issues(config, args):
   """

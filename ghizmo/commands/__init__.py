@@ -13,4 +13,4 @@ For the GitHub library API, see: https://github.com/sigmavirus24/github3.py
 
 __author__ = 'jlevy'
 
-__all__ = ['repo', 'general', 'team', 'authors']
+__all__ = ['general', 'repo', 'users', 'team', 'authors', 'misc']
