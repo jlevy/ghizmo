@@ -40,7 +40,7 @@ def assemble_authors(config, args):
   author_list = []
   for contributor in repo.contributors():
     user = github.user(contributor.login)
-    author_list.append((user.login, user.name, roles.get(user.login)))
+    author_list.append((user.login, user, roles.get(user.login)))
 
   # If any roles are listed but were somehow missing from the contributors return by the API
   # (for example the commits weren't linked up to the account properly), include them too.
@@ -48,14 +48,13 @@ def assemble_authors(config, args):
   for login in roles:
     if login not in contributors_found:
       user = github.user(login)
-      user_name = user.name if user else None
-      yield lib.status("Author has a role but is not returned by GitHub as a contributor: %s (%s)" % (login, user_name))
-      author_list.append((login, user_name, roles.get(login)))
+      yield lib.status("Author has a role but is not returned by GitHub as a contributor: %s (%s)" % (login, user))
+      author_list.append((login, user, roles.get(login)))
 
   yield lib.status("Read %s authors" % len(author_list))
 
   # Sort alphabetically by login.
-  author_list.sort(key=lambda (login, name, role): login.lower())
+  author_list.sort(key=lambda (login, user, role): login.lower())
 
   def format_user(login, name):
     if login and name:
@@ -67,6 +66,7 @@ def assemble_authors(config, args):
 
   commit_tallies = {}
   for stat in repo.contributor_statistics():
+    yield lib.status("contrib stat: login '%s' total '%s'" % (stat.author.login, stat.total))
     commit_tallies[stat.author.login] = stat.total
 
   yield lib.status("Read %s contributor stats" % len(commit_tallies))
@@ -77,15 +77,18 @@ def assemble_authors(config, args):
 
   yield lib.status("Read %s issues/PRs" % len(issue_tallies))
 
+  yield { "commit_tallies": commit_tallies, "issue_tallies": issue_tallies }
+
   with codecs.open("AUTHORS.md", "w", "utf-8") as f:
     f.write(u"# Authors\n\n")
     if header:
       f.write(u"%s\n\n" % header)
-    for (login, name, role) in author_list:
+    for (login, user, role) in author_list:
+      name = user.name if user else None
       if login in exclude:
         continue
 
-      user_url = "https://github.com/%s" % login
+      user_url = "https://github.com/%s" % login if user else None
       # Link to commits by that author
       commits_count = commit_tallies.get(login, 0)
       commits_url = "%s/commits?author=%s" % (repo.html_url, urllib.quote_plus(login))
@@ -93,9 +96,17 @@ def assemble_authors(config, args):
       issues_count = issue_tallies.get(login, 0)
       issues_url = "%s/issues?q=%s" % (repo.html_url, urllib.quote_plus("author:%s" % login))
 
-      role_str = u" \u2014 _%s_" % role if role else ""
-      f.write(u"* [%s](%s) \u2014 [%s+](%s)/[%s+](%s)%s\n" % \
-        (format_user(login, name), user_url, commits_count, commits_url, issues_count, issues_url, role_str))
+      yield lib.status("login '%s' commits %s issues %s" % (login, commits_count, issues_count))
+
+      user_link = format_user(login, name)
+      if user_url:
+        user_link = "[%s](%s)" % (user_link, user_url)
+      f.write(u"* %s" % user_link)
+      if commits_count or issues_count:
+        f.write(u" \u2014 [%s+](%s)/[%s+](%s)" % (commits_count, commits_url, issues_count, issues_url))
+      if role:
+        f.write(u" \u2014 _%s_" % role)
+      f.write("\n")
     if footer:
       f.write(u"\n%s\n\n" % footer)
 
