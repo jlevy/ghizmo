@@ -25,6 +25,16 @@ import configs
 import commands
 
 
+_MFA = None
+
+
+def read_two_factor_info():
+  global _MFA
+  if not _MFA:
+    _MFA = raw_input("2FA Code: ")
+  return _MFA
+
+
 def read_login_info(username=None):
   if not username:
     username = raw_input("GitHub username: ")
@@ -38,7 +48,8 @@ def login(username=None):
     return github3.login(token=token)
   else:
     username = username or configs.get_username()
-    return github3.login(*read_login_info(username=username))
+    return github3.login(*read_login_info(username=username),
+                         two_factor_callback=read_two_factor_info)
 
 
 def format_to_string(obj, format=None):
