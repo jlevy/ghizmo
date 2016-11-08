@@ -53,8 +53,8 @@ def assemble_authors(config, args):
 
   yield lib.status("Read %s authors" % len(author_list))
 
-  # Sort alphabetically by login.
-  author_list.sort(key=lambda (login, user, role): login.lower())
+  # Sort alphabetically by login, with assigned roles grouped first.
+  author_list.sort(key=lambda (login, user, role): ((0 if role else 1), login.lower()))
 
   def format_user(login, name):
     if login and name:
