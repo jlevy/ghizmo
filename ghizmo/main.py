@@ -5,18 +5,16 @@ If commands require input, it must be line-delimited JSON (e.g. quoted strings).
 For further documentation, see: https://github.com/jlevy/ghizmo
 """
 
-from __future__ import print_function
-
-__author__ = 'jlevy'
-
 import logging as log
 import sys
 import os
 import argparse
-from commands.lib import to_bool
+from ghizmo.commands.lib import to_bool
+
+__author__ = 'jlevy'
 
 NAME = "ghizmo"
-VERSION = "0.1.12"
+VERSION = "0.2.0"
 DESCRIPTION = "ghizmo: An extensible command line for GitHub"
 LONG_DESCRIPTION = __doc__
 
@@ -48,7 +46,7 @@ class UserArgs(object):
 
   def add_explicit(self, d):
     self.dict.update(d)
-    self._explicit_keys.extend(d.keys())
+    self._explicit_keys.extend(list(d.keys()))
 
   def add_implicit(self, d):
     self.dict.update(d)
@@ -105,8 +103,8 @@ def main():
   # Bootstrap logging right up front, so we do it before assembling commands for help.
   log_setup(log.DEBUG if "--debug" in sys.argv else log.WARN)
 
-  import ghizmo
-  import configs
+  from ghizmo import ghizmo
+  from ghizmo import configs
 
   command_directory = ghizmo.command_directory()
   command_modules = sorted(set([module for (module, name, doc) in command_directory]))
@@ -115,7 +113,7 @@ def main():
     + "(augment by adding to ./ghizmo_commands.py)\n\n" \
     + "commands available:\n" \
     + "\n".join(["  %s: %s" % (name, doc) for (module, name, doc) in command_directory])
-  parser = argparse.ArgumentParser(description=DESCRIPTION, version=VERSION,
+  parser = argparse.ArgumentParser(description=DESCRIPTION,
                                    epilog="\n" + __doc__ + "\n" + command_docs,
                                    formatter_class=argparse.RawTextHelpFormatter)
   parser.add_argument("command", help="%s command" % NAME, choices=ghizmo.list_commands())
@@ -128,6 +126,7 @@ def main():
   parser.add_argument("-n", "--dry-run", help="dry run: log actions but don't do anything", action="store_true")
   parser.add_argument("--format", help="output format", choices=["json", "yaml"])
   parser.add_argument("-a", "--arg", help="argument of the form key=value (may repeat this)", action="append")
+  parser.add_argument('--version', action='version', version=VERSION)
 
   args = parser.parse_args()
 

@@ -10,7 +10,7 @@ setup(
   author="Joshua Levy",
   license="Apache 2",
   url="https://github.com/jlevy/ghizmo",
-  install_requires=["github3.py>=1.0.0a2", "PyYAML>=3.11", "functools32>=3.2.3"],
+  install_requires=["github3.py>=1.0.0a4", "PyYAML>=3.12"],
   description=main.DESCRIPTION,
   long_description=main.LONG_DESCRIPTION,
   classifiers=[
@@ -23,7 +23,7 @@ setup(
     'Operating System :: MacOS :: MacOS X',
     'Operating System :: POSIX',
     'Operating System :: Unix',
-    'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3.6',
     'Topic :: Utilities',
     'Topic :: Software Development'
   ],

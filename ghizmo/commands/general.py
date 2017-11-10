@@ -1,6 +1,3 @@
-from __future__ import print_function
-
-
 def rate_limit(config, args):
   """
   Current rate limit information.

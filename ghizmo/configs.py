@@ -2,17 +2,15 @@
 Ghizmo config handling.
 """
 
-from __future__ import print_function
-
-__author__ = 'jlevy'
-
 import logging as log
 import os
 import re
 import yaml
 import subprocess
 
-from functools32 import lru_cache  # functools32 pip
+from functools import lru_cache
+
+__author__ = 'jlevy'
 
 CONFIG_FILENAME = ".ghizmo.yml"
 
