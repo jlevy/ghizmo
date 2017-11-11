@@ -141,7 +141,7 @@ It looks at GitHub history and creates an `AUTHORS.md` file, also including role
 
 ## Installation
 
-Requires Python 2.7+. Then (with sudo if desired):
+Requires Python 3.6+. Then (with sudo if desired):
 
 ```
 pip install ghizmo
