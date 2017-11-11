@@ -1,6 +1,5 @@
-from __future__ import print_function
-
 from ghizmo.commands import lib
+
 
 def teams(config, args):
   """

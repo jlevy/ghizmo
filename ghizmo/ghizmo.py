@@ -2,9 +2,6 @@
 Ghizmo main library.
 """
 
-from __future__ import print_function
-
-__author__ = 'jlevy'
 
 import logging as log
 import sys
@@ -17,17 +14,18 @@ import importlib
 import getpass
 from collections import namedtuple
 from collections import OrderedDict
-from functools32 import lru_cache  # functools32 pip
+from functools import lru_cache
 import github3  # github3.py pip
 from github3.null import NullObject
 
-import configs
-import commands
+from ghizmo import configs
+from ghizmo import commands
 
+__author__ = 'jlevy'
 
 def read_login_info(username=None):
   if not username:
-    username = raw_input("GitHub username: ")
+    username = eval(input("GitHub username: "))
   return (username, getpass.getpass())
 
 
@@ -104,7 +102,7 @@ def all_command_functions():
         raise ValueError("Duplicate function name for command: %s" % name)
       func_map[name] = func
   # Sort items first by module, then by name.
-  return OrderedDict(sorted(func_map.items(), key=lambda (name, func): (func.__module__, name)))
+  return OrderedDict(sorted(list(func_map.items()), key=lambda name_func: (name_func[1].__module__, name_func[0])))
 
 
 @lru_cache()
@@ -117,7 +115,7 @@ def command_directory(use_dashes=True):
 
   transform = _to_dash if use_dashes else lambda x: x
   return [(func.__module__, transform(name), doc_for_function(func)) for (name, func) in
-          all_command_functions().iteritems()]
+          all_command_functions().items()]
 
 
 @lru_cache()
