@@ -49,7 +49,7 @@ def infer_repo(remote_name="origin"):
   Extract the current repository info, if available, using .git/config in current working directory.
   """
   log.info("Checking in cwd for git dirctory: %s", os.getcwd())
-  remote_url = subprocess.check_output(["git", "config", "--get", "remote.%s.url" % remote_name])
+  remote_url = bytes.decode(subprocess.check_output(["git", "config", "--get", "remote.%s.url" % remote_name]))
   (owner, repo_name) = _extract_github_repo_info(remote_url)
   log.info("Inferred repository: %s/%s", owner, repo_name)
   return (owner, repo_name)
